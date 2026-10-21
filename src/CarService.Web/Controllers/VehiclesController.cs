@@ -2,52 +2,72 @@ using CarService.Core.Entities;
 using CarService.Core.Interfaces;
 using CarService.Web.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarService.Web.Controllers;
 
-// MVC in one paragraph:
-//   Request /Vehicles/Create  ->  routing picks VehiclesController.Create
-//   -> controller asks a service for data -> passes a model to a View (.cshtml)
-//   -> Razor renders HTML -> response.
-// The route pattern "{controller}/{action}/{id?}" is set in Program.cs; the class
-// name minus "Controller" is the controller part, the method name is the action.
 public class VehiclesController : Controller
 {
     private readonly IVehicleService _vehicles;
+    private readonly ICustomerService _customers;
 
-    public VehiclesController(IVehicleService vehicles) => _vehicles = vehicles;
-
-    // GET /Vehicles  -> list page
-    public async Task<IActionResult> Index()
+    // A controller may depend on several services. Each one is supplied by the DI container.
+    public VehiclesController(IVehicleService vehicles, ICustomerService customers)
     {
-        var vehicles = await _vehicles.GetAllAsync();
-        return View(vehicles);     // looks for Views/Vehicles/Index.cshtml
+        _vehicles = vehicles;
+        _customers = customers;
     }
 
-    // GET /Vehicles/Create -> show the empty form
-    [HttpGet]
-    public IActionResult Create() => View(new VehicleFormViewModel());
+    public async Task<IActionResult> Index() => View(await _vehicles.GetAllAsync());
 
-    // POST /Vehicles/Create -> the form was submitted
-    // [ValidateAntiForgeryToken] blocks CSRF: the form includes a hidden token
-    // (added automatically by the <form> tag helper) that must match a cookie.
+    [HttpGet]
+    public async Task<IActionResult> Create()
+    {
+        var form = new VehicleFormViewModel();
+        await FillCustomersAsync(form);
+        return View(form);
+    }
+
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(VehicleFormViewModel form)
-    {   
-        if (!ModelState.IsValid)           // validation attributes failed
-            return View(form);             // redisplay the form with error messages
+    {
+        // Business check: ModelState.AddModelError attaches a message to a field, and the
+        // asp-validation-for span next to that input displays it - same as an attribute error.
+        if (await _vehicles.IsLicensePlateTakenAsync(form.LicensePlate))
+            ModelState.AddModelError(nameof(form.LicensePlate), "A vehicle with this license plate already exists.");
 
-        await _vehicles.CreateAsync(new Vehicle
+        if (!ModelState.IsValid)
         {
-            Make = form.Make,
-            Model = form.Model,
-            Year = form.Year,
-            LicensePlate = form.LicensePlate,
-            CustomerId = form.CustomerId
-        });
+            await FillCustomersAsync(form);   // the dropdown choices were not posted back
+            return View(form);
+        }
 
-        // POST-Redirect-GET: redirect after a successful POST so that refreshing
-        // the browser doesn't re-submit the form.
+        try
+        {
+            await _vehicles.CreateAsync(new Vehicle
+            {
+                Make = form.Make,
+                Model = form.Model,
+                Year = form.Year,
+                LicensePlate = form.LicensePlate,
+                CustomerId = form.CustomerId
+            });
+        }
+        catch (DbUpdateException)
+        {
+            // RACE CONDITION safety net: two users can both pass the check above, then both
+            // insert. The unique index lets only one win; the loser lands here.
+            ModelState.AddModelError(nameof(form.LicensePlate), "A vehicle with this license plate already exists.");
+            await FillCustomersAsync(form);
+            return View(form);
+        }
+
         return RedirectToAction(nameof(Index));
     }
+
+    private async Task FillCustomersAsync(VehicleFormViewModel form) =>
+        form.Customers = (await _customers.GetAllAsync())
+            .Select(c => new SelectListItem(c.FullName, c.Id.ToString()))
+            .ToList();
 }

@@ -31,8 +31,20 @@ public class VehicleService : IVehicleService
 
     public async Task<Vehicle> CreateAsync(Vehicle vehicle)
     {
+        vehicle.LicensePlate = NormalizePlate(vehicle.LicensePlate);
         _db.Vehicles.Add(vehicle);         // mark as "to insert"
         await _db.SaveChangesAsync();      // INSERT happens here, Id gets filled in
         return vehicle;
     }
+
+    public async Task<bool> IsLicensePlateTakenAsync(string licensePlate)
+    {
+        var plate = NormalizePlate(licensePlate);
+        return await _db.Vehicles.AnyAsync(v => v.LicensePlate == plate);   // translates to SELECT EXISTS(...)
+    }
+
+    // WHY normalize: SQLite compares text case-sensitively, so "abc-123" and "ABC-123"
+    // would both pass the unique index. Storing one canonical form (trimmed, upper-case)
+    // makes the index and the lookup agree. Do it in ONE place - the service.
+    private static string NormalizePlate(string plate) => plate.Trim().ToUpperInvariant();
 }

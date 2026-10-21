@@ -33,9 +33,16 @@
     </div>
     <div class="mb-3">
         <label asp-for="CustomerId" class="form-label"></label>
-        <input asp-for="CustomerId" class="form-control" />
+        @* asp-items renders one <option> per SelectListItem and marks the current CustomerId
+           as selected, so the choice survives a redisplay after a validation error. *@
+        <select asp-for="CustomerId" asp-items="Model.Customers" class="form-select">
+            <option value="0">-- select owner --</option>
+        </select>
         <span asp-validation-for="CustomerId" class="text-danger"></span>
-        <div class="form-text">TODO (exercise): replace with a dropdown of customers.</div>
+        @if (!Model.Customers.Any())
+        {
+            <div class="form-text">No customers yet. <a asp-controller="Customers" asp-action="Create">Add one first</a>.</div>
+        }
     </div>
 
     <button type="submit" class="btn btn-primary">Save</button>

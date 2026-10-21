@@ -52,6 +52,26 @@ public class VehicleServiceTests : IDisposable
             service.CreateAsync(new Vehicle { Make = "C", Model = "D", Year = 2021, LicensePlate = "DUP-1", CustomerId = 1 }));
     }
 
+    [Fact]
+    public async Task IsLicensePlateTakenAsync_IgnoresCaseAndWhitespace()
+    {
+        var service = new VehicleService(_db);
+        await service.CreateAsync(new Vehicle { Make = "A", Model = "B", Year = 2020, LicensePlate = "abc-123", CustomerId = 1 });
+
+        Assert.True(await service.IsLicensePlateTakenAsync("  ABC-123 "));
+        Assert.False(await service.IsLicensePlateTakenAsync("XYZ-999"));
+    }
+
+    [Fact]
+    public async Task CreateAsync_StoresPlateInCanonicalForm()
+    {
+        var service = new VehicleService(_db);
+
+        var created = await service.CreateAsync(new Vehicle { Make = "A", Model = "B", Year = 2020, LicensePlate = " abc-123 ", CustomerId = 1 });
+
+        Assert.Equal("ABC-123", created.LicensePlate);
+    }
+
     public void Dispose()
     {
         _db.Dispose();
