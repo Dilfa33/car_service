@@ -72,6 +72,18 @@ public class VehicleServiceTests : IDisposable
         Assert.Equal("ABC-123", created.LicensePlate);
     }
 
+    [Fact]
+    public async Task CreateAsync_NormalizesVin_AndTreatsBlankAsNull()
+    {
+        var service = new VehicleService(_db);
+
+        var withVin = await service.CreateAsync(new Vehicle { Make = "A", Model = "B", Year = 2020, LicensePlate = "V-1", Vin = " 1hgcm82633a004352 ", CustomerId = 1 });
+        var blankVin = await service.CreateAsync(new Vehicle { Make = "A", Model = "B", Year = 2020, LicensePlate = "V-2", Vin = "   ", CustomerId = 1 });
+
+        Assert.Equal("1HGCM82633A004352", withVin.Vin);
+        Assert.Null(blankVin.Vin);
+    }
+
     public void Dispose()
     {
         _db.Dispose();

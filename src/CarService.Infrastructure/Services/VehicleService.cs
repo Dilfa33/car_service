@@ -1,3 +1,4 @@
+using CarService.Core.Common;
 using CarService.Core.Entities;
 using CarService.Core.Interfaces;
 using CarService.Infrastructure.Data;
@@ -32,6 +33,7 @@ public class VehicleService : IVehicleService
     public async Task<Vehicle> CreateAsync(Vehicle vehicle)
     {
         vehicle.LicensePlate = NormalizePlate(vehicle.LicensePlate);
+        vehicle.Vin = string.IsNullOrWhiteSpace(vehicle.Vin) ? null : VinValidator.Normalize(vehicle.Vin);
         _db.Vehicles.Add(vehicle);         // mark as "to insert"
         await _db.SaveChangesAsync();      // INSERT happens here, Id gets filled in
         return vehicle;

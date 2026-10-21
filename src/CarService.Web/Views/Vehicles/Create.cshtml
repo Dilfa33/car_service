@@ -12,6 +12,15 @@
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
     <div class="mb-3">
+        <label asp-for="Vin" class="form-label"></label>
+        <div class="input-group">
+            <input asp-for="Vin" class="form-control text-uppercase" maxlength="17" autocomplete="off" />
+            <button type="button" id="vin-lookup" class="btn btn-outline-secondary">Look up VIN</button>
+        </div>
+        <span asp-validation-for="Vin" class="text-danger"></span>
+        <div id="vin-message" class="form-text" role="status"></div>
+    </div>
+    <div class="mb-3">
         <label asp-for="Make" class="form-label"></label>
         <input asp-for="Make" class="form-control" />
         <span asp-validation-for="Make" class="text-danger"></span>
@@ -52,4 +61,39 @@
 @section Scripts {
     @* Client-side validation scripts, shipped with the MVC template *@
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Progressive enhancement: the form works without this script (type the details by hand);
+        // the script only adds the convenience of auto-filling them.
+        const lookupUrl = '@Url.Action("DecodeVin", "Vehicles")';   // generated server-side, so it follows the routing config
+        const button = document.getElementById('vin-lookup');
+        const message = document.getElementById('vin-message');
+
+        button.addEventListener('click', async () => {
+            const vin = document.getElementById('Vin').value.trim();
+            if (!vin) { message.textContent = 'Enter a VIN first.'; return; }
+
+            button.disabled = true;
+            message.className = 'form-text';
+            message.textContent = 'Looking up...';
+            try {
+                const response = await fetch(`${lookupUrl}?vin=${encodeURIComponent(vin)}`);
+                const result = await response.json();
+                if (result.succeeded) {
+                    document.getElementById('Make').value = result.make;
+                    document.getElementById('Model').value = result.model;
+                    if (result.year) document.getElementById('Year').value = result.year;
+                }
+                // textContent (not innerHTML): the message is never interpreted as HTML (XSS-safe).
+                message.textContent = result.succeeded
+                    ? (result.message ?? 'Details filled in. Please check them.')
+                    : result.message;
+                message.className = result.succeeded ? 'form-text text-success' : 'form-text text-danger';
+            } catch {
+                message.textContent = 'Could not reach the server. Enter the details manually.';
+                message.className = 'form-text text-danger';
+            } finally {
+                button.disabled = false;
+            }
+        });
+    </script>
 }

@@ -45,7 +45,9 @@ The rule: **dependencies point inward**. Core knows nothing about the others.
 - **Testing with real SQLite in memory**: `VehicleServiceTests`.
 
 ## Done so far
-- Vehicles: list, create (customer dropdown, duplicate-plate validation).
+- Vehicles: list, create (customer dropdown, duplicate-plate validation, **VIN lookup** via the NHTSA vPIC API:
+  `IVinDecoder` in Core, `NhtsaVinDecoder` typed `HttpClient` in Infrastructure, JSON endpoint `Vehicles/DecodeVin`
+  called from the form with `fetch`).
 - Customers: full CRUD (delete refused while they own vehicles).
 - Appointments: book, edit, status workflow `Scheduled -> InProgress -> Completed` (or `Cancelled`).
   The rules live in `ServiceAppointment.ChangeStatus` (Core) and are unit-tested without a database.
@@ -55,6 +57,6 @@ The rule: **dependencies point inward**. Core knows nothing about the others.
 1. Vehicle Edit / Delete.
 2. Customer details page with their vehicles and appointment history.
 3. Search, filter and paging on the lists.
-4. **External API**: decode VINs with the free [NHTSA vPIC API](https://vpic.nhtsa.dot.gov/api/) through a typed `HttpClient` (`AddHttpClient<IVinDecoder, NhtsaVinDecoder>()`), in Infrastructure.
+4. VIN extras: cache lookups (`IMemoryCache`), retry/resilience (`Microsoft.Extensions.Http.Resilience`), unique VIN index.
 5. **Authentication** with ASP.NET Core Identity.
 6. Logging (`ILogger<T>`), a friendly error page, then a small JSON API controller.

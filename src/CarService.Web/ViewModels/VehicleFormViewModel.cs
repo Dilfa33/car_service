@@ -7,6 +7,11 @@ namespace CarService.Web.ViewModels;
 
 public class VehicleFormViewModel
 {
+    // Optional. The real format check (17 chars, no I/O/Q) is done in the controller with the
+    // Core VinValidator, so the rule exists in exactly one place.
+    [StringLength(17), Display(Name = "VIN")]
+    public string? Vin { get; set; }
+
     [Required, StringLength(50)]
     public string Make { get; set; } = "";
 

@@ -24,6 +24,15 @@ builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 
+// Typed HttpClient: "when someone asks for IVinDecoder, build an NhtsaVinDecoder and give it an
+// HttpClient configured like this". The base URL comes from configuration, not code.
+// The timeout stops a slow external API from hanging our page; the decoder turns it into a friendly message.
+builder.Services.AddHttpClient<IVinDecoder, NhtsaVinDecoder>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Nhtsa:BaseUrl"]!);
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
+
 // TimeProvider.System = the real clock. Singleton: it has no per-request state.
 builder.Services.AddSingleton(TimeProvider.System);
 
