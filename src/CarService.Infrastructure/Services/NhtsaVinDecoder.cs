@@ -43,14 +43,30 @@ public class NhtsaVinDecoder : IVinDecoder
             if (r is null) return VinDecodeResult.Fail("The VIN service returned an unexpected answer.");
 
             // NHTSA reports problems in ErrorCode ("0" = clean) and still fills what it can.
-            if (string.IsNullOrWhiteSpace(r.Make) || string.IsNullOrWhiteSpace(r.Model))
-                return VinDecodeResult.Fail($"No vehicle found for this VIN. ({FirstProblem(r.ErrorText)})");
+            // No make = it does not know this VIN at all (e.g. a manufacturer not sold in the US).
+            if (string.IsNullOrWhiteSpace(r.Make))
+                return VinDecodeResult.Fail($"No vehicle found for this VIN. ({RootCause(r.ErrorText)})");
+
+            var year = int.TryParse(r.ModelYear, out var y) ? y : (int?)null;
+
+            // PARTIAL RESULT: NHTSA's data is US-market. For most European cars (WVW..., WVG...)
+            // it recognises the manufacturer and the year code but has no model. That is still
+            // useful, so we return what we have and say plainly what is missing, rather than
+            // throwing it away. The year is also less trustworthy outside the US, hence "check it".
+            if (string.IsNullOrWhiteSpace(r.Model))
+                return new VinDecodeResult(
+                    Succeeded: true,
+                    Make: TitleCase(r.Make),
+                    Model: null,
+                    Year: year,
+                    Message: "Found the make and year only. NHTSA has no model data for this VIN " +
+                             "(common for European cars) - please enter the model and check the year.");
 
             return new VinDecodeResult(
                 Succeeded: true,
                 Make: TitleCase(r.Make),
                 Model: r.Model.Trim(),
-                Year: int.TryParse(r.ModelYear, out var year) ? year : null,
+                Year: year,
                 Message: r.ErrorCode == "0" ? null : $"Decoded with a warning: {FirstProblem(r.ErrorText)}");
         }
         // EXTERNAL SERVICES FAIL. Network down, DNS, 500s, a timeout, a changed JSON shape...
@@ -69,6 +85,14 @@ public class NhtsaVinDecoder : IVinDecoder
     // ErrorText looks like "1 - Check Digit (9th position) does not calculate properly; 6 - Incomplete VIN".
     private static string FirstProblem(string? errorText) =>
         errorText?.Split(';')[0].Trim() ?? "unknown problem";
+
+    // When nothing was decoded, the check-digit complaint (code 1) is just noise - European VINs do not
+    // even have a check digit - so skip it and report the first problem that explains the failure.
+    private static string RootCause(string? errorText)
+    {
+        var problems = errorText?.Split(';').Select(p => p.Trim()).ToList() ?? new();
+        return problems.FirstOrDefault(p => !p.StartsWith("1 -")) ?? problems.FirstOrDefault() ?? "unknown problem";
+    }
 
     // NHTSA sends "HONDA"; we want "Honda".
     private static string TitleCase(string s) =>

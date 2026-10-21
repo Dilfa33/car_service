@@ -80,8 +80,10 @@
                 const result = await response.json();
                 if (result.succeeded) {
                     document.getElementById('Make').value = result.make;
-                    document.getElementById('Model').value = result.model;
                     if (result.year) document.getElementById('Year').value = result.year;
+                    // Partial result (common outside the US): leave Model for the user and put the cursor there.
+                    if (result.model) document.getElementById('Model').value = result.model;
+                    else document.getElementById('Model').focus();
                 }
                 // textContent (not innerHTML): the message is never interpreted as HTML (XSS-safe).
                 message.textContent = result.succeeded

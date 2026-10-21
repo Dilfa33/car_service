@@ -64,6 +64,22 @@ public class NhtsaVinDecoderTests
     }
 
     [Fact]
+    public async Task Decode_EuropeanVin_MakeButNoModel_ReturnsPartialResult()
+    {
+        // Shape of what NHTSA really returns for a European VW (WVW...): make + year, empty model.
+        var (decoder, _) = Create(_ => Json(
+            """{"Results":[{"Make":"VOLKSWAGEN","Model":"","ModelYear":"2006","ErrorCode":"1,4,14","ErrorText":"1 - Check Digit (9th position) does not calculate properly"}]}"""));
+
+        var result = await decoder.DecodeAsync("WVWZZZ1KZ6W612345");
+
+        Assert.True(result.Succeeded);
+        Assert.Equal("Volkswagen", result.Make);
+        Assert.Null(result.Model);
+        Assert.Equal(2006, result.Year);
+        Assert.Contains("enter the model", result.Message);
+    }
+
+    [Fact]
     public async Task Decode_NothingFound_Fails_WithReason()
     {
         var (decoder, _) = Create(_ => Json(
@@ -73,6 +89,19 @@ public class NhtsaVinDecoderTests
 
         Assert.False(result.Succeeded);
         Assert.Contains("Incomplete VIN", result.Message);
+    }
+
+    [Fact]
+    public async Task Decode_UnregisteredManufacturer_ExplainsTheRealReason_NotTheCheckDigit()
+    {
+        var (decoder, _) = Create(_ => Json(
+            """{"Results":[{"Make":"","Model":"","ModelYear":"","ErrorCode":"1,7","ErrorText":"1 - Check Digit (9th position) does not calculate properly; 7 - Manufacturer is not registered with NHTSA"}]}"""));
+
+        var result = await decoder.DecodeAsync("TMBJJ7NE0K0123456");
+
+        Assert.False(result.Succeeded);
+        Assert.Contains("not registered", result.Message);
+        Assert.DoesNotContain("Check Digit", result.Message);
     }
 
     [Fact]
