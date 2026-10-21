@@ -22,6 +22,10 @@ builder.Services.AddDbContext<CarServiceDbContext>(options =>
 // "When someone asks for IVehicleService, give them a VehicleService."
 builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+
+// TimeProvider.System = the real clock. Singleton: it has no per-request state.
+builder.Services.AddSingleton(TimeProvider.System);
 
 var app = builder.Build();
 

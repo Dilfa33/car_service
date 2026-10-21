@@ -1,0 +1,13 @@
+@* A tiny partial that turns a status into a coloured Bootstrap badge.
+   Reused by the list and the details page. *@
+@model CarService.Core.Entities.AppointmentStatus
+@{
+    var css = Model switch
+    {
+        CarService.Core.Entities.AppointmentStatus.Scheduled  => "text-bg-primary",
+        CarService.Core.Entities.AppointmentStatus.InProgress => "text-bg-warning",
+        CarService.Core.Entities.AppointmentStatus.Completed  => "text-bg-success",
+        _                                                     => "text-bg-secondary"
+    };
+}
+<span class="badge @css">@Model</span>

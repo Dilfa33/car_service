@@ -44,11 +44,17 @@ The rule: **dependencies point inward**. Core knows nothing about the others.
 - **POST-Redirect-GET and anti-forgery tokens**: `VehiclesController.Create`.
 - **Testing with real SQLite in memory**: `VehicleServiceTests`.
 
-## Roadmap (your exercises, in order)
-1. **Customers CRUD**: new `ICustomerService`, `CustomerService`, `CustomersController`, views. Copy the Vehicles pattern.
-2. Replace the `CustomerId` number input with a **dropdown** (`SelectList` in the ViewModel).
-3. Vehicle **Details / Edit / Delete** pages.
-4. **Appointments**: schedule for a vehicle, change status.
-5. **External API**: decode VINs with the free [NHTSA vPIC API](https://vpic.nhtsa.dot.gov/api/) through a typed `HttpClient` (`AddHttpClient<IVinDecoder, NhtsaVinDecoder>()`), in Infrastructure.
-6. **Authentication** with ASP.NET Core Identity.
-7. **Error handling & logging** (`ILogger<T>`), then a small JSON API controller.
+## Done so far
+- Vehicles: list, create (customer dropdown, duplicate-plate validation).
+- Customers: full CRUD (delete refused while they own vehicles).
+- Appointments: book, edit, status workflow `Scheduled -> InProgress -> Completed` (or `Cancelled`).
+  The rules live in `ServiceAppointment.ChangeStatus` (Core) and are unit-tested without a database.
+  There is deliberately no delete: appointments are cancelled so history is kept.
+
+## Roadmap (next)
+1. Vehicle Edit / Delete.
+2. Customer details page with their vehicles and appointment history.
+3. Search, filter and paging on the lists.
+4. **External API**: decode VINs with the free [NHTSA vPIC API](https://vpic.nhtsa.dot.gov/api/) through a typed `HttpClient` (`AddHttpClient<IVinDecoder, NhtsaVinDecoder>()`), in Infrastructure.
+5. **Authentication** with ASP.NET Core Identity.
+6. Logging (`ILogger<T>`), a friendly error page, then a small JSON API controller.

@@ -11,7 +11,7 @@
 
 <table class="table">
     <thead>
-        <tr><th>Make</th><th>Model</th><th>Year</th><th>Plate</th><th>Owner</th></tr>
+        <tr><th>Make</th><th>Model</th><th>Year</th><th>Plate</th><th>Owner</th><th></th></tr>
     </thead>
     <tbody>
     @foreach (var v in Model)
@@ -22,6 +22,7 @@
             <td>@v.Year</td>
             <td>@v.LicensePlate</td>
             <td>@v.Customer?.FullName</td>
+            <td><a asp-controller="Appointments" asp-action="Create" asp-route-vehicleId="@v.Id">Book</a></td>
         </tr>
     }
     </tbody>

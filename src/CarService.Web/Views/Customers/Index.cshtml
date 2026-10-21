@@ -5,11 +5,6 @@
 
 <h1>Customers</h1>
 
-@if (TempData["Error"] is string error)
-{
-    <div class="alert alert-danger">@error</div>
-}
-
 <p><a asp-action="Create" class="btn btn-primary">Add customer</a></p>
 
 <table class="table">

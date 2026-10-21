@@ -1,0 +1,36 @@
+@model CarService.Web.ViewModels.AppointmentFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<input type="hidden" asp-for="Id" />
+
+@if (Model.Id == 0)
+{
+    <div class="mb-3">
+        <label asp-for="VehicleId" class="form-label"></label>
+        <select asp-for="VehicleId" asp-items="Model.Vehicles" class="form-select">
+            <option value="0">-- select vehicle --</option>
+        </select>
+        <span asp-validation-for="VehicleId" class="text-danger"></span>
+    </div>
+}
+else
+{
+    <p><strong>Vehicle:</strong> @Model.VehicleLabel</p>
+}
+
+<div class="mb-3">
+    <label asp-for="Description" class="form-label"></label>
+    <input asp-for="Description" class="form-control" />
+    <span asp-validation-for="Description" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="ScheduledAt" class="form-label"></label>
+    <input asp-for="ScheduledAt" class="form-control" />
+    <span asp-validation-for="ScheduledAt" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="Cost" class="form-label"></label>
+    <input asp-for="Cost" class="form-control" step="0.01" />
+    <span asp-validation-for="Cost" class="text-danger"></span>
+    <div class="form-text">Optional. Required before the appointment can be completed.</div>
+</div>

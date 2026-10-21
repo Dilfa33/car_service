@@ -1,0 +1,35 @@
+@model IEnumerable<CarService.Core.Entities.ServiceAppointment>
+@{
+    ViewData["Title"] = "Appointments";
+}
+
+<h1>Appointments</h1>
+<p><a asp-action="Create" class="btn btn-primary">Book appointment</a></p>
+
+<div class="table-responsive">
+<table class="table">
+    <thead>
+        <tr><th>When</th><th>Vehicle</th><th>Customer</th><th>Work</th><th>Status</th><th>Cost</th><th></th></tr>
+    </thead>
+    <tbody>
+    @foreach (var a in Model)
+    {
+        <tr>
+            <td>@a.ScheduledAt.ToString("yyyy-MM-dd HH:mm")</td>
+            <td>@a.Vehicle?.Make @a.Vehicle?.Model (@a.Vehicle?.LicensePlate)</td>
+            <td>@a.Vehicle?.Customer?.FullName</td>
+            <td>@a.Description</td>
+            <td><partial name="_StatusBadge" model="a.Status" /></td>
+            <td>@(a.Cost?.ToString("C") ?? "-")</td>
+            <td>
+                <a asp-action="Details" asp-route-id="@a.Id">Details</a>
+                @if (!a.IsClosed)
+                {
+                    <text>| <a asp-action="Edit" asp-route-id="@a.Id">Edit</a></text>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>
