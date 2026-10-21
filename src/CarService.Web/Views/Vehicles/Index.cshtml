@@ -1,0 +1,28 @@
+@* Razor = HTML + C#. `@model` declares the type this view receives from the controller.
+   It's strongly typed, so mistakes are compile errors, not runtime surprises. *@
+@model IEnumerable<CarService.Core.Entities.Vehicle>
+
+@{
+    ViewData["Title"] = "Vehicles";
+}
+
+<h1>Vehicles</h1>
+<p><a asp-action="Create" class="btn btn-primary">Add vehicle</a></p>
+
+<table class="table">
+    <thead>
+        <tr><th>Make</th><th>Model</th><th>Year</th><th>Plate</th><th>Owner</th></tr>
+    </thead>
+    <tbody>
+    @foreach (var v in Model)
+    {
+        <tr>
+            <td>@v.Make</td>   @* @ outputs HTML-encoded text - protects against XSS *@
+            <td>@v.Model</td>
+            <td>@v.Year</td>
+            <td>@v.LicensePlate</td>
+            <td>@v.Customer?.FullName</td>
+        </tr>
+    }
+    </tbody>
+</table>

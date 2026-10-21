@@ -1,0 +1,48 @@
+@model CarService.Web.ViewModels.VehicleFormViewModel
+@{
+    ViewData["Title"] = "Add vehicle";
+}
+
+<h1>Add vehicle</h1>
+
+@* Tag helpers (asp-*) are HTML attributes that Razor turns into real attributes:
+   asp-action builds the URL, <form> gets the anti-forgery token, asp-for wires
+   an input to a model property (name, id, value, validation attributes). *@
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Make" class="form-label"></label>
+        <input asp-for="Make" class="form-control" />
+        <span asp-validation-for="Make" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Model" class="form-label"></label>
+        <input asp-for="Model" class="form-control" />
+        <span asp-validation-for="Model" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Year" class="form-label"></label>
+        <input asp-for="Year" class="form-control" />
+        <span asp-validation-for="Year" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="LicensePlate" class="form-label"></label>
+        <input asp-for="LicensePlate" class="form-control" />
+        <span asp-validation-for="LicensePlate" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="CustomerId" class="form-label"></label>
+        <input asp-for="CustomerId" class="form-control" />
+        <span asp-validation-for="CustomerId" class="text-danger"></span>
+        <div class="form-text">TODO (exercise): replace with a dropdown of customers.</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    @* Client-side validation scripts, shipped with the MVC template *@
+    <partial name="_ValidationScriptsPartial" />
+}

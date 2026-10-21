@@ -1,0 +1,17 @@
+@model CarService.Web.ViewModels.CustomerFormViewModel
+@{
+    ViewData["Title"] = "Edit customer";
+}
+
+<h1>Edit customer</h1>
+
+@* asp-route-id puts the id in the URL (/Customers/Edit/5) so the POST matches Edit(int id, ...) *@
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+    <partial name="_Form" model="Model" />
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

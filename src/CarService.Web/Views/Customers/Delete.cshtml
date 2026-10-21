@@ -1,0 +1,12 @@
+@model CarService.Core.Entities.Customer
+@{
+    ViewData["Title"] = "Delete customer";
+}
+
+<h1>Delete customer</h1>
+<p>Are you sure you want to delete <strong>@Model.FullName</strong>?</p>
+
+<form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
