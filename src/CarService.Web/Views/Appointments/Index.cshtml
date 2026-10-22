@@ -1,4 +1,5 @@
-@model IEnumerable<CarService.Core.Entities.ServiceAppointment>
+@model CarService.Web.ViewModels.ListViewModel<CarService.Core.Entities.ServiceAppointment>
+@using CarService.Core.Entities
 @{
     ViewData["Title"] = "Appointments";
 }
@@ -6,13 +7,26 @@
 <h1>Appointments</h1>
 <p><a asp-action="Create" class="btn btn-primary">Book appointment</a></p>
 
+@* Filter by status. A GET form, like the search box: the choice lives in the URL. *@
+<form method="get" asp-action="Index" class="d-flex gap-2 mb-3">
+    <select name="status" class="form-select" style="max-width: 16rem"
+            asp-items="@(new SelectList(Enum.GetNames<AppointmentStatus>(), Model.Status?.ToString()))">
+        <option value="">All statuses</option>
+    </select>
+    <button type="submit" class="btn btn-outline-primary">Filter</button>
+    @if (Model.Status is not null)
+    {
+        <a asp-action="Index" class="btn btn-link">Clear</a>
+    }
+</form>
+
 <div class="table-responsive">
 <table class="table">
     <thead>
         <tr><th>When</th><th>Vehicle</th><th>Customer</th><th>Work</th><th>Status</th><th>Cost</th><th></th></tr>
     </thead>
     <tbody>
-    @foreach (var a in Model)
+    @foreach (var a in Model.Result.Items)
     {
         <tr>
             <td>@a.ScheduledAt.ToString("yyyy-MM-dd HH:mm")</td>
@@ -33,3 +47,5 @@
     </tbody>
 </table>
 </div>
+
+<partial name="_Pager" model="Model.Pager" />

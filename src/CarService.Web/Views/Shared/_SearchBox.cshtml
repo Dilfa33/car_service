@@ -1,0 +1,12 @@
+@* A GET form: submitting puts the text in the URL (?search=...), so results are bookmarkable and
+   the Back button works. Searches are read-only, so GET (no anti-forgery token) is correct. *@
+@model string?
+
+<form method="get" asp-action="Index" class="d-flex gap-2 mb-3">
+    <input name="search" value="@Model" class="form-control" style="max-width: 24rem" placeholder="Search..." />
+    <button type="submit" class="btn btn-outline-primary">Search</button>
+    @if (!string.IsNullOrWhiteSpace(Model))
+    {
+        <a asp-action="Index" class="btn btn-link">Clear</a>
+    }
+</form>

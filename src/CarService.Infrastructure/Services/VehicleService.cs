@@ -27,6 +27,29 @@ public class VehicleService : IVehicleService
             .OrderBy(v => v.Make).ThenBy(v => v.Model)
             .ToListAsync();                // the SQL actually runs HERE (LINQ is lazy until then)
 
+    public async Task<PagedResult<Vehicle>> SearchAsync(string? search, int page, int pageSize)
+    {
+        var query = _db.Vehicles.Include(v => v.Customer).AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            // The query is built in steps: EF only turns it into SQL at the end, so adding a
+            // Where conditionally is free. EF.Functions.Like becomes SQL `LIKE '%term%'`.
+            // (SQLite's LIKE ignores case for ASCII; PostgreSQL would need EF.Functions.ILike.)
+            var term = $"%{search.Trim()}%";
+            query = query.Where(v =>
+                EF.Functions.Like(v.LicensePlate, term) ||
+                EF.Functions.Like(v.Make, term) ||
+                EF.Functions.Like(v.Model, term) ||
+                EF.Functions.Like(v.Vin, term) ||
+                EF.Functions.Like(v.Customer!.FullName, term));
+        }
+
+        // ThenBy(Id) is the tie-breaker that keeps the order stable across pages.
+        return await query.OrderBy(v => v.Make).ThenBy(v => v.Model).ThenBy(v => v.Id)
+            .ToPagedResultAsync(page, pageSize);
+    }
+
     public async Task<Vehicle?> GetByIdAsync(int id) =>
         await _db.Vehicles.Include(v => v.Customer).FirstOrDefaultAsync(v => v.Id == id);
 

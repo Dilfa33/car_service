@@ -1,3 +1,4 @@
+using CarService.Core.Common;
 using CarService.Core.Entities;
 using CarService.Core.Interfaces;
 using CarService.Infrastructure.Data;
@@ -16,6 +17,32 @@ public class CustomerService : ICustomerService
             .AsNoTracking()
             .OrderBy(c => c.FullName)
             .ToListAsync();
+
+    public async Task<PagedResult<Customer>> SearchAsync(string? search, int page, int pageSize)
+    {
+        var query = _db.Customers.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = $"%{search.Trim()}%";
+            query = query.Where(c =>
+                EF.Functions.Like(c.FullName, term) ||
+                EF.Functions.Like(c.Email, term) ||
+                EF.Functions.Like(c.Phone, term));
+        }
+
+        return await query.OrderBy(c => c.FullName).ThenBy(c => c.Id).ToPagedResultAsync(page, pageSize);
+    }
+
+    public async Task<Customer?> GetWithHistoryAsync(int id) =>
+        await _db.Customers
+            .Include(c => c.Vehicles).ThenInclude(v => v.Appointments)
+            .AsNoTracking()
+            // One big JOIN across customer x vehicles x appointments repeats the customer and
+            // vehicle columns on every row. AsSplitQuery runs one query per collection instead:
+            // more round trips, but no duplicated data. Worth it once graphs get this deep.
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(c => c.Id == id);
 
     public async Task<Customer?> GetByIdAsync(int id) =>
         await _db.Customers.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);

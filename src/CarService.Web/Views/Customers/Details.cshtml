@@ -1,0 +1,66 @@
+@model CarService.Web.ViewModels.CustomerDetailsViewModel
+@{
+    ViewData["Title"] = Model.Customer.FullName;
+}
+
+<h1>@Model.Customer.FullName</h1>
+<p class="text-muted">@Model.Customer.Email @(Model.Customer.Phone is null ? "" : "· " + Model.Customer.Phone)</p>
+<p>
+    <a asp-action="Edit" asp-route-id="@Model.Customer.Id" class="btn btn-outline-secondary btn-sm">Edit</a>
+    <a asp-action="Index" class="btn btn-link btn-sm">Back to customers</a>
+</p>
+
+<h2 class="h4 mt-4">Vehicles</h2>
+<p><a asp-controller="Vehicles" asp-action="Create" asp-route-customerId="@Model.Customer.Id" class="btn btn-primary btn-sm">Add vehicle</a></p>
+@if (Model.Vehicles.Count == 0)
+{
+    <p class="text-muted">No vehicles yet.</p>
+}
+else
+{
+    <div class="table-responsive">
+    <table class="table">
+        <thead><tr><th>Vehicle</th><th>Plate</th><th>Open</th><th>Total visits</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var row in Model.Vehicles)
+        {
+            <tr>
+                <td>@row.Vehicle.Make @row.Vehicle.Model (@row.Vehicle.Year)</td>
+                <td>@row.Vehicle.LicensePlate</td>
+                <td>@row.OpenAppointments</td>
+                <td>@row.TotalAppointments</td>
+                <td><a asp-controller="Appointments" asp-action="Create" asp-route-vehicleId="@row.Vehicle.Id">Book</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    </div>
+}
+
+<h2 class="h4 mt-4">Service history</h2>
+<p>Total spent on completed work: <strong>@Model.TotalSpent.ToString("C")</strong></p>
+@if (Model.History.Count == 0)
+{
+    <p class="text-muted">No appointments yet.</p>
+}
+else
+{
+    <div class="table-responsive">
+    <table class="table">
+        <thead><tr><th>When</th><th>Vehicle</th><th>Work</th><th>Status</th><th>Cost</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var row in Model.History)
+        {
+            <tr>
+                <td>@row.Appointment.ScheduledAt.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@row.Vehicle.LicensePlate</td>
+                <td>@row.Appointment.Description</td>
+                <td><partial name="~/Views/Appointments/_StatusBadge.cshtml" model="row.Appointment.Status" /></td>
+                <td>@(row.Appointment.Cost?.ToString("C") ?? "-")</td>
+                <td><a asp-controller="Appointments" asp-action="Details" asp-route-id="@row.Appointment.Id">Details</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    </div>
+}

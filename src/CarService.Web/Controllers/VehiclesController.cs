@@ -22,12 +22,21 @@ public class VehiclesController : Controller
         _vinDecoder = vinDecoder;
     }
 
-    public async Task<IActionResult> Index() => View(await _vehicles.GetAllAsync());
+    private const int PageSize = 10;
 
-    [HttpGet]
-    public async Task<IActionResult> Create()
+    // GET /Vehicles?search=golf&page=2
+    // Both parameters come from the query string. `page = 1` is a default for when it's absent.
+    public async Task<IActionResult> Index(string? search, int page = 1)
     {
-        var form = new VehicleFormViewModel();
+        var result = await _vehicles.SearchAsync(search, page, PageSize);
+        return View(new ListViewModel<Vehicle> { Result = result, Search = search });
+    }
+
+    // GET /Vehicles/Create?customerId=3  (the "Add vehicle" link on a customer's page uses this)
+    [HttpGet]
+    public async Task<IActionResult> Create(int? customerId)
+    {
+        var form = new VehicleFormViewModel { CustomerId = customerId ?? 0 };
         await FillCustomersAsync(form);
         return View(form);
     }

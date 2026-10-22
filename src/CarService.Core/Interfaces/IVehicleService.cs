@@ -1,3 +1,4 @@
+using CarService.Core.Common;
 using CarService.Core.Entities;
 
 namespace CarService.Core.Interfaces;
@@ -5,6 +6,9 @@ namespace CarService.Core.Interfaces;
 public interface IVehicleService
 {
     Task<IReadOnlyList<Vehicle>> GetAllAsync();
+
+    // Searches plate, VIN, make, model and owner name. A null/blank search means "everything".
+    Task<PagedResult<Vehicle>> SearchAsync(string? search, int page, int pageSize);
     Task<Vehicle?> GetByIdAsync(int id);
     Task<Vehicle> CreateAsync(Vehicle vehicle);
 

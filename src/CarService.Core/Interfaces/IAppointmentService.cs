@@ -1,4 +1,5 @@
 using CarService.Core.Common;
+using CarService.Core.Common;
 using CarService.Core.Entities;
 
 namespace CarService.Core.Interfaces;
@@ -9,6 +10,8 @@ namespace CarService.Core.Interfaces;
 public interface IAppointmentService
 {
     Task<IReadOnlyList<ServiceAppointment>> GetAllAsync();
+    // status == null means "all statuses". Newest first.
+    Task<PagedResult<ServiceAppointment>> SearchAsync(AppointmentStatus? status, int page, int pageSize);
     Task<ServiceAppointment?> GetByIdAsync(int id);
     Task<OperationResult> CreateAsync(ServiceAppointment appointment);
     Task<OperationResult> UpdateAsync(int id, string description, DateTime scheduledAt, decimal? cost);

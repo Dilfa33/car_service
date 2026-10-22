@@ -1,7 +1,4 @@
-@* Razor = HTML + C#. `@model` declares the type this view receives from the controller.
-   It's strongly typed, so mistakes are compile errors, not runtime surprises. *@
-@model IEnumerable<CarService.Core.Entities.Vehicle>
-
+@model CarService.Web.ViewModels.ListViewModel<CarService.Core.Entities.Vehicle>
 @{
     ViewData["Title"] = "Vehicles";
 }
@@ -9,22 +6,28 @@
 <h1>Vehicles</h1>
 <p><a asp-action="Create" class="btn btn-primary">Add vehicle</a></p>
 
+<partial name="_SearchBox" model="Model.Search" />
+
+<div class="table-responsive">
 <table class="table">
     <thead>
         <tr><th>Make</th><th>Model</th><th>Year</th><th>Plate</th><th>VIN</th><th>Owner</th><th></th></tr>
     </thead>
     <tbody>
-    @foreach (var v in Model)
+    @foreach (var v in Model.Result.Items)
     {
         <tr>
-            <td>@v.Make</td>   @* @ outputs HTML-encoded text - protects against XSS *@
+            <td>@v.Make</td>
             <td>@v.Model</td>
             <td>@v.Year</td>
             <td>@v.LicensePlate</td>
             <td>@v.Vin</td>
-            <td>@v.Customer?.FullName</td>
+            <td><a asp-controller="Customers" asp-action="Details" asp-route-id="@v.CustomerId">@v.Customer?.FullName</a></td>
             <td><a asp-controller="Appointments" asp-action="Create" asp-route-vehicleId="@v.Id">Book</a></td>
         </tr>
     }
     </tbody>
 </table>
+</div>
+
+<partial name="_Pager" model="Model.Pager" />

@@ -17,7 +17,15 @@ public class AppointmentsController : Controller
         _vehicles = vehicles;
     }
 
-    public async Task<IActionResult> Index() => View(await _appointments.GetAllAsync());
+    private const int PageSize = 10;
+
+    // GET /Appointments?status=Scheduled&page=2
+    // Model binding turns the text "Scheduled" into the enum; a missing/empty value becomes null.
+    public async Task<IActionResult> Index(AppointmentStatus? status, int page = 1)
+    {
+        var result = await _appointments.SearchAsync(status, page, PageSize);
+        return View(new ListViewModel<ServiceAppointment> { Result = result, Status = status });
+    }
 
     public async Task<IActionResult> Details(int id)
     {

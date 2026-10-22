@@ -1,23 +1,25 @@
-@model IEnumerable<CarService.Core.Entities.Customer>
+@model CarService.Web.ViewModels.ListViewModel<CarService.Core.Entities.Customer>
 @{
     ViewData["Title"] = "Customers";
 }
 
 <h1>Customers</h1>
-
 <p><a asp-action="Create" class="btn btn-primary">Add customer</a></p>
 
+<partial name="_SearchBox" model="Model.Search" />
+
+<div class="table-responsive">
 <table class="table">
     <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th></th></tr></thead>
     <tbody>
-    @foreach (var c in Model)
+    @foreach (var c in Model.Result.Items)
     {
         <tr>
-            <td>@c.FullName</td>
+            <td><a asp-action="Details" asp-route-id="@c.Id">@c.FullName</a></td>
             <td>@c.Email</td>
             <td>@c.Phone</td>
             <td>
-                @* asp-route-id fills the {id} part of the URL: /Customers/Edit/5 *@
+                <a asp-action="Details" asp-route-id="@c.Id">Details</a> |
                 <a asp-action="Edit" asp-route-id="@c.Id">Edit</a> |
                 <a asp-action="Delete" asp-route-id="@c.Id">Delete</a>
             </td>
@@ -25,3 +27,6 @@
     }
     </tbody>
 </table>
+</div>
+
+<partial name="_Pager" model="Model.Pager" />

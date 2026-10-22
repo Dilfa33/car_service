@@ -11,8 +11,21 @@ public class CustomersController : Controller
 
     public CustomersController(ICustomerService customers) => _customers = customers;
 
-    // GET /Customers
-    public async Task<IActionResult> Index() => View(await _customers.GetAllAsync());
+    private const int PageSize = 10;
+
+    // GET /Customers?search=...&page=...
+    public async Task<IActionResult> Index(string? search, int page = 1)
+    {
+        var result = await _customers.SearchAsync(search, page, PageSize);
+        return View(new ListViewModel<Customer> { Result = result, Search = search });
+    }
+
+    // GET /Customers/Details/5 - everything about one customer on one page.
+    public async Task<IActionResult> Details(int id)
+    {
+        var customer = await _customers.GetWithHistoryAsync(id);
+        return customer is null ? NotFound() : View(CustomerDetailsViewModel.From(customer));
+    }
 
     // GET /Customers/Create
     [HttpGet]

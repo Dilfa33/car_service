@@ -28,6 +28,19 @@ public class AppointmentService : IAppointmentService
             .OrderBy(a => a.ScheduledAt)
             .ToListAsync();
 
+    public async Task<PagedResult<ServiceAppointment>> SearchAsync(AppointmentStatus? status, int page, int pageSize)
+    {
+        var query = _db.ServiceAppointments
+            .Include(a => a.Vehicle).ThenInclude(v => v!.Customer)
+            .AsNoTracking();
+
+        if (status is not null)
+            query = query.Where(a => a.Status == status);
+
+        return await query.OrderByDescending(a => a.ScheduledAt).ThenBy(a => a.Id)
+            .ToPagedResultAsync(page, pageSize);
+    }
+
     public async Task<ServiceAppointment?> GetByIdAsync(int id) =>
         await _db.ServiceAppointments
             .Include(a => a.Vehicle).ThenInclude(v => v!.Customer)

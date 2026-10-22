@@ -49,14 +49,15 @@ The rule: **dependencies point inward**. Core knows nothing about the others.
   `IVinDecoder` in Core, `NhtsaVinDecoder` typed `HttpClient` in Infrastructure, JSON endpoint `Vehicles/DecodeVin`
   called from the form with `fetch`).
 - Customers: full CRUD (delete refused while they own vehicles).
+- Customer details page (vehicles + full service history + total spent) using `Include`/`ThenInclude`/`AsSplitQuery`.
+- Search and paging on Vehicles and Customers, status filter and paging on Appointments (`PagedResult<T>`,
+  `ToPagedResultAsync`, shared `_Pager` and `_SearchBox` partials; filters live in the URL).
 - Appointments: book, edit, status workflow `Scheduled -> InProgress -> Completed` (or `Cancelled`).
   The rules live in `ServiceAppointment.ChangeStatus` (Core) and are unit-tested without a database.
   There is deliberately no delete: appointments are cancelled so history is kept.
 
 ## Roadmap (next)
 1. Vehicle Edit / Delete.
-2. Customer details page with their vehicles and appointment history.
-3. Search, filter and paging on the lists.
-4. VIN extras: cache lookups (`IMemoryCache`), retry/resilience (`Microsoft.Extensions.Http.Resilience`), unique VIN index.
-5. **Authentication** with ASP.NET Core Identity.
-6. Logging (`ILogger<T>`), a friendly error page, then a small JSON API controller.
+2. VIN extras: cache lookups (`IMemoryCache`), retry/resilience (`Microsoft.Extensions.Http.Resilience`), unique VIN index.
+3. **Authentication** with ASP.NET Core Identity.
+4. Logging (`ILogger<T>`), a friendly error page, then a small JSON API controller.
