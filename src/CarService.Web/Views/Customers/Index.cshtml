@@ -21,7 +21,11 @@
             <td>
                 <a asp-action="Details" asp-route-id="@c.Id">Details</a> |
                 <a asp-action="Edit" asp-route-id="@c.Id">Edit</a> |
-                <a asp-action="Delete" asp-route-id="@c.Id">Delete</a>
+                @* Hiding the link is only courtesy. The real protection is [Authorize] on the action. *@
+                @if (User.IsInRole(CarService.Core.Common.Roles.Admin))
+                {
+                    <text>| <a asp-action="Delete" asp-route-id="@c.Id">Delete</a></text>
+                }
             </td>
         </tr>
     }

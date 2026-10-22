@@ -1,6 +1,8 @@
+using CarService.Core.Common;
 using CarService.Core.Entities;
 using CarService.Core.Interfaces;
 using CarService.Web.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarService.Web.Controllers;
@@ -84,7 +86,10 @@ public class CustomersController : Controller
     // WHY a confirmation page and not a plain link that deletes: GET requests must be
     // safe (no side effects) - browsers prefetch links and crawlers follow them.
     // Destructive actions are always POST.
-    [HttpGet]
+    // ROLE CHECK: the fallback policy already demands a login for the whole controller; this attribute
+    // adds "...and be an Admin" for just these two actions. Mechanics get the AccessDenied page.
+    // Put it on the POST too: hiding the button is not security, anyone can craft a request.
+    [HttpGet, Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> Delete(int id)
     {
         var customer = await _customers.GetByIdAsync(id);
@@ -94,7 +99,7 @@ public class CustomersController : Controller
     // POST /Customers/Delete/5
     // ActionName("Delete") lets this method answer to /Customers/Delete while having a
     // different C# name - two methods can't share name + parameter list.
-    [HttpPost, ActionName("Delete"), ValidateAntiForgeryToken]
+    [HttpPost, ActionName("Delete"), ValidateAntiForgeryToken, Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         if (!await _customers.DeleteAsync(id))

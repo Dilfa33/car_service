@@ -44,6 +44,28 @@ The rule: **dependencies point inward**. Core knows nothing about the others.
 - **POST-Redirect-GET and anti-forgery tokens**: `VehiclesController.Create`.
 - **Testing with real SQLite in memory**: `VehicleServiceTests`.
 
+## Logging in (development)
+On the first `dotnet run` in Development the app applies migrations and seeds a first admin:
+
+| | |
+|---|---|
+| Email | `admin@carservice.local` |
+| Password | `Admin#12345` (throwaway, defined in `appsettings.Development.json`) |
+
+Log in, open **Staff**, and create accounts for your mechanics. **Never reuse this password.** In production there is no
+auto-migration and no seed unless you set `Seed__AdminEmail` and `Seed__AdminPassword` as environment variables;
+run `dotnet ef database update` first.
+
+| Role | Can do |
+|---|---|
+| Mechanic | Vehicles, customers, appointments (everything day-to-day) |
+| Admin | All of the above + delete customers + manage staff accounts |
+
+How it's secured: ASP.NET Core Identity (salted password hashes, 5-attempt lockout), an auth cookie (HttpOnly),
+a **fallback policy** that makes every page private unless marked `[AllowAnonymous]`, role checks with
+`[Authorize(Roles = Roles.Admin)]`, anti-forgery tokens on every POST, logout as POST, and open-redirect protection on login.
+`AuthorizationTests` start the real app in memory and prove these rules over HTTP.
+
 ## Done so far
 - Vehicles: list, create (customer dropdown, duplicate-plate validation, **VIN lookup** via the NHTSA vPIC API:
   `IVinDecoder` in Core, `NhtsaVinDecoder` typed `HttpClient` in Infrastructure, JSON endpoint `Vehicles/DecodeVin`
@@ -59,5 +81,5 @@ The rule: **dependencies point inward**. Core knows nothing about the others.
 ## Roadmap (next)
 1. Vehicle Edit / Delete.
 2. VIN extras: cache lookups (`IMemoryCache`), retry/resilience (`Microsoft.Extensions.Http.Resilience`), unique VIN index.
-3. **Authentication** with ASP.NET Core Identity.
+3. Authentication extras: change-password page, edit a user's role, HTTPS-only cookies for production.
 4. Logging (`ILogger<T>`), a friendly error page, then a small JSON API controller.

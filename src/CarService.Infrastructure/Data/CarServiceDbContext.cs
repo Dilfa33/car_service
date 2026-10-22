@@ -1,4 +1,6 @@
 using CarService.Core.Entities;
+using CarService.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarService.Infrastructure.Data;
@@ -9,7 +11,9 @@ namespace CarService.Infrastructure.Data;
 //       data), not business logic.
 // WHEN: One DbContext per app (for now). Add a DbSet for every entity you want
 //       to query. Lifetime is "scoped" = one instance per web request.
-public class CarServiceDbContext : DbContext
+// IdentityDbContext<TUser> = DbContext + the Identity tables (AspNetUsers, AspNetRoles, AspNetUserRoles...).
+// Our own DbSets keep working exactly as before; the users and our business data share one database.
+public class CarServiceDbContext : IdentityDbContext<ApplicationUser>
 {
     // The options (which DB provider, connection string) are injected from Program.cs.
     public CarServiceDbContext(DbContextOptions<CarServiceDbContext> options) : base(options) { }
@@ -21,6 +25,10 @@ public class CarServiceDbContext : DbContext
     // Fluent API: configuration that conventions can't express.
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // REQUIRED: Identity configures its own tables inside base.OnModelCreating. Forget this call
+        // and the Identity tables silently lose their keys and relationships.
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<Vehicle>()
             .HasIndex(v => v.LicensePlate)
             .IsUnique();                        // DB itself rejects duplicate plates

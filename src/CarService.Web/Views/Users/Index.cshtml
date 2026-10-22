@@ -1,0 +1,29 @@
+@model IReadOnlyList<CarService.Core.Interfaces.UserSummary>
+@{
+    ViewData["Title"] = "Staff accounts";
+}
+
+<h1>Staff accounts</h1>
+<p><a asp-action="Create" class="btn btn-primary">Add account</a></p>
+
+<div class="table-responsive">
+<table class="table">
+    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var u in Model)
+    {
+        <tr>
+            <td>@u.FullName</td>
+            <td>@u.Email</td>
+            <td>@string.Join(", ", u.Roles)</td>
+            <td>
+                @* A destructive action = a POST form, never a link. The token is added by the form tag helper. *@
+                <form asp-action="Delete" asp-route-id="@u.Id" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-link p-0">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>
